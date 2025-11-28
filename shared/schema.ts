@@ -65,9 +65,3 @@ export const insertBookSchema = createInsertSchema(books).omit({
 });
 
 export const updateBookSchema = insertBookSchema.partial();
-
-// Types
-export type UpsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
-export type InsertBook = z.infer<typeof insertBookSchema>;
-export type Book = typeof books.$inferSelect;
