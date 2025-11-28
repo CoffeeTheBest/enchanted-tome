@@ -10,6 +10,12 @@ export default {
         md: ".375rem", /* 6px */
         sm: ".1875rem", /* 3px */
       },
+      fontFamily: {
+        sans: ["Crimson Text", "Georgia", "serif"],
+        serif: ["Crimson Text", "Georgia", "serif"],
+        mono: ["Courier New", "monospace"],
+        display: ["Playfair Display", "Cinzel", "Georgia", "serif"],
+      },
       colors: {
         // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
@@ -96,10 +102,30 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "float-dust": {
+          "0%, 100%": { transform: "translate(0, 0)", opacity: "0.3" },
+          "50%": { transform: "translate(10px, -20px)", opacity: "0.6" },
+        },
+        "candle-flicker": {
+          "0%, 100%": { opacity: "0.3", transform: "scale(1)" },
+          "50%": { opacity: "0.5", transform: "scale(1.02)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in-up": "fade-in-up 0.6s ease-out",
+        "fade-in": "fade-in 0.4s ease-out",
+        "float-dust": "float-dust 15s ease-in-out infinite",
+        "candle-flicker": "candle-flicker 4s ease-in-out infinite",
       },
     },
   },
