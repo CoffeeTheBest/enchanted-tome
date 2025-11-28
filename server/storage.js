@@ -1,16 +1,16 @@
-import { users, books, type UpsertUser, type InsertBook } from "@shared/schema";
-import { db } from "./db";
+import { users, books } from "@shared/schema";
+import { db } from "./db.js";
 import { eq, desc } from "drizzle-orm";
 
 // Storage interface for Replit Auth and Books CRUD
 export class DatabaseStorage {
   // User operations for Replit Auth
-  async getUser(id: string) {
+  async getUser(id) {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser) {
+  async upsertUser(userData) {
     const [user] = await db
       .insert(users)
       .values(userData)
@@ -25,7 +25,7 @@ export class DatabaseStorage {
     return user;
   }
 
-  async updateUser(id: string, data: Partial<UpsertUser>) {
+  async updateUser(id, data) {
     const [user] = await db
       .update(users)
       .set({ ...data, updatedAt: new Date() })
@@ -39,12 +39,12 @@ export class DatabaseStorage {
     return db.select().from(books).orderBy(desc(books.createdAt));
   }
 
-  async getBook(id: number) {
+  async getBook(id) {
     const [book] = await db.select().from(books).where(eq(books.id, id));
     return book;
   }
 
-  async createBook(bookData: InsertBook) {
+  async createBook(bookData) {
     const [book] = await db
       .insert(books)
       .values(bookData)
@@ -52,7 +52,7 @@ export class DatabaseStorage {
     return book;
   }
 
-  async updateBook(id: number, bookData: Partial<InsertBook>) {
+  async updateBook(id, bookData) {
     const [book] = await db
       .update(books)
       .set({ ...bookData, updatedAt: new Date() })
@@ -61,7 +61,7 @@ export class DatabaseStorage {
     return book;
   }
 
-  async deleteBook(id: number) {
+  async deleteBook(id) {
     const [book] = await db
       .delete(books)
       .where(eq(books.id, id))

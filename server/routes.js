@@ -1,15 +1,13 @@
-import type { Express } from "express";
-import type { Server } from "http";
-import { storage } from "./storage";
-import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
+import { storage } from "./storage.js";
+import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth.js";
 import { insertBookSchema, updateBookSchema } from "@shared/schema";
 
-export async function registerRoutes(httpServer: Server, app: Express) {
+export async function registerRoutes(httpServer, app) {
   // Setup Replit Auth
   await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -47,7 +45,7 @@ export async function registerRoutes(httpServer: Server, app: Express) {
   });
 
   // Admin route - Create book
-  app.post("/api/books", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.post("/api/books", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const result = insertBookSchema.safeParse(req.body);
       if (!result.success) {
@@ -66,7 +64,7 @@ export async function registerRoutes(httpServer: Server, app: Express) {
   });
 
   // Admin route - Update book
-  app.put("/api/books/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.put("/api/books/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const existing = await storage.getBook(id);
@@ -91,7 +89,7 @@ export async function registerRoutes(httpServer: Server, app: Express) {
   });
 
   // Admin route - Delete book
-  app.delete("/api/books/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.delete("/api/books/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const existing = await storage.getBook(id);
@@ -108,7 +106,7 @@ export async function registerRoutes(httpServer: Server, app: Express) {
   });
 
   // Admin route - Make user admin (for initial setup)
-  app.post("/api/admin/make-admin", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/make-admin", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       

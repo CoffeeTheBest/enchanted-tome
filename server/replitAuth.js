@@ -4,14 +4,13 @@ import passport from "passport";
 import session from "express-session";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
-import type { Express, RequestHandler } from "express";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 
 const getOidcConfig = memoize(
   async () => {
     return await client.discovery(
       new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
+      process.env.REPL_ID
     );
   },
   { maxAge: 3600 * 1000 }
@@ -27,7 +26,7 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
@@ -39,14 +38,14 @@ export function getSession() {
   });
 }
 
-function updateUserSession(user: any, tokens: client.TokenSet) {
+function updateUserSession(user, tokens) {
   user.claims = tokens.claims();
   user.access_token = tokens.access_token;
   user.refresh_token = tokens.refresh_token;
   user.expires_at = user.claims?.exp;
 }
 
-async function upsertUser(claims: any) {
+async function upsertUser(claims) {
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
@@ -56,7 +55,7 @@ async function upsertUser(claims: any) {
   });
 }
 
-export async function setupAuth(app: Express) {
+export async function setupAuth(app) {
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
@@ -64,7 +63,7 @@ export async function setupAuth(app: Express) {
 
   const config = await getOidcConfig();
 
-  const verify = async (tokens: client.TokenSet, verified: passport.DoneCallback) => {
+  const verify = async (tokens, verified) => {
     const user = {};
     updateUserSession(user, tokens);
     await upsertUser(tokens.claims());
@@ -72,10 +71,10 @@ export async function setupAuth(app: Express) {
   };
 
   // Keep track of registered strategies
-  const registeredStrategies = new Set<string>();
+  const registeredStrategies = new Set();
 
   // Helper function to ensure strategy exists for a domain
-  const ensureStrategy = (domain: string) => {
+  const ensureStrategy = (domain) => {
     const strategyName = `replitauth:${domain}`;
     if (!registeredStrategies.has(strategyName)) {
       const strategy = new Strategy(
@@ -93,7 +92,7 @@ export async function setupAuth(app: Express) {
   };
 
   passport.serializeUser((user, cb) => cb(null, user));
-  passport.deserializeUser((user, cb) => cb(null, user as Express.User));
+  passport.deserializeUser((user, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
     ensureStrategy(req.hostname);
@@ -123,8 +122,8 @@ export async function setupAuth(app: Express) {
   });
 }
 
-export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
+export const isAuthenticated = async (req, res, next) => {
+  const user = req.user;
 
   if (!req.isAuthenticated() || !user?.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -152,8 +151,8 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const isAdmin: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
+export const isAdmin = async (req, res, next) => {
+  const user = req.user;
   if (!user?.claims?.sub) {
     return res.status(401).json({ message: "Unauthorized" });
   }
