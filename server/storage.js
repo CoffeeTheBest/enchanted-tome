@@ -1,10 +1,8 @@
-import { users, books } from "@shared/schema";
+import { users, books } from "@shared/schema.js";
 import { db } from "./db.js";
 import { eq, desc } from "drizzle-orm";
 
-// Storage interface for Replit Auth and Books CRUD
 export class DatabaseStorage {
-  // User operations for Replit Auth
   async getUser(id) {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -34,7 +32,6 @@ export class DatabaseStorage {
     return user;
   }
 
-  // Book operations
   async getAllBooks() {
     return db.select().from(books).orderBy(desc(books.createdAt));
   }

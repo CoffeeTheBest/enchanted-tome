@@ -1,12 +1,10 @@
 import { storage } from "./storage.js";
 import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth.js";
-import { insertBookSchema, updateBookSchema } from "@shared/schema";
+import { insertBookSchema, updateBookSchema } from "@shared/schema.js";
 
 export async function registerRoutes(httpServer, app) {
-  // Setup Replit Auth
   await setupAuth(app);
 
-  // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -18,7 +16,6 @@ export async function registerRoutes(httpServer, app) {
     }
   });
 
-  // Public route - Get all books
   app.get("/api/books", async (req, res) => {
     try {
       const books = await storage.getAllBooks();
@@ -29,7 +26,6 @@ export async function registerRoutes(httpServer, app) {
     }
   });
 
-  // Public route - Get single book
   app.get("/api/books/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -44,7 +40,6 @@ export async function registerRoutes(httpServer, app) {
     }
   });
 
-  // Admin route - Create book
   app.post("/api/books", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const result = insertBookSchema.safeParse(req.body);
@@ -63,7 +58,6 @@ export async function registerRoutes(httpServer, app) {
     }
   });
 
-  // Admin route - Update book
   app.put("/api/books/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -88,7 +82,6 @@ export async function registerRoutes(httpServer, app) {
     }
   });
 
-  // Admin route - Delete book
   app.delete("/api/books/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -105,18 +98,15 @@ export async function registerRoutes(httpServer, app) {
     }
   });
 
-  // Admin route - Make user admin (for initial setup)
   app.post("/api/admin/make-admin", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user.claims.sub;
       
-      // Check if this is the first user or if user already exists
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Make the user an admin
       const updatedUser = await storage.updateUser(userId, { isAdmin: true });
       res.json(updatedUser);
     } catch (error) {

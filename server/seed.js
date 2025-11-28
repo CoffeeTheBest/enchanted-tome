@@ -1,5 +1,5 @@
 import { db } from "./db.js";
-import { books } from "@shared/schema";
+import { books } from "@shared/schema.js";
 
 const sampleBooks = [
   {
