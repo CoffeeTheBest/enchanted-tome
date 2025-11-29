@@ -3,18 +3,22 @@ import session from 'express-session';
 import { storage } from './storage.js';
 
 // Initialize Firebase Admin SDK
-if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-  throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is not set. Please update your .env file');
+if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_CLIENT_EMAIL) {
+  throw new Error('Firebase service account credentials are not fully set. Please update your .env file with FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL.');
 }
 
 try {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  };
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
 } catch (error) {
   console.error('Error initializing Firebase Admin SDK:', error);
-  throw new Error('Failed to initialize Firebase Admin SDK. Please check your FIREBASE_SERVICE_ACCOUNT_KEY in .env');
+  throw new Error('Failed to initialize Firebase Admin SDK. Please check your Firebase credentials in .env');
 }
 
 
