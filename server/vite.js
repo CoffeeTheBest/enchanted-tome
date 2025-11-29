@@ -30,6 +30,9 @@ export async function setupVite(server, app) {
   app.use(vite.middlewares);
 
   app.use("*", async (req, res, next) => {
+    if (req.originalUrl.startsWith("/api")) {
+      return next();
+    }
     const url = req.originalUrl;
 
     try {
