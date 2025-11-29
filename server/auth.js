@@ -1,27 +1,26 @@
 import admin from 'firebase-admin';
 import session from 'express-session';
 import { storage } from './storage.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Initialize Firebase Admin SDK
-let serviceAccount;
+if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_CLIENT_EMAIL) {
+  throw new Error('Firebase service account credentials are not fully set. Please update your .env file with FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL.');
+}
+
 try {
-  const serviceAccountPath = path.resolve(__dirname, '../firebase-service-account.json');
-  serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  };
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
 } catch (error) {
-  console.error('Error loading Firebase service account key:', error);
-  console.error('Firebase Admin SDK not initialized. Authentication will not work correctly.');
-  // Exit or throw an error if the service account key is not properly configured
-  // For now, we'll proceed but authentication won't work correctly.
+  console.error('Error initializing Firebase Admin SDK:', error);
+  throw new Error('Failed to initialize Firebase Admin SDK. Please check your Firebase credentials in .env');
 }
+
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week

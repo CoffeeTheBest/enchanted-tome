@@ -3,5 +3,8 @@ dist
 .DS_Store
 server/public
 vite.config.ts.*
-*.tar.gz
 .env
+.local/
+*.log
+*.tar.gz
+firebase-service-account.json
