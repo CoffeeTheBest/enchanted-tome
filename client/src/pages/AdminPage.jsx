@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,7 +84,7 @@ export default function AdminPage() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        // No redirect needed, the component will render the 'Access Denied' message.
       }, 500);
     }
   }, [isAuthenticated, authLoading, toast]);
@@ -116,7 +115,7 @@ export default function AdminPage() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          // No redirect needed, the component will render the 'Access Denied' message.
         }, 500);
         return;
       }
@@ -149,7 +148,7 @@ export default function AdminPage() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          // No redirect needed, the component will render the 'Access Denied' message.
         }, 500);
         return;
       }
@@ -181,7 +180,7 @@ export default function AdminPage() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          // No redirect needed, the component will render the 'Access Denied' message.
         }, 500);
         return;
       }
