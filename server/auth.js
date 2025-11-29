@@ -52,7 +52,9 @@ export async function setupAuth(app) {
     if (idToken) {
       try {
         const decodedToken = await admin.auth().verifyIdToken(idToken);
-        req.user = decodedToken;
+        // Fetch the user from our database to get isAdmin flag
+        const dbUser = await storage.getUser(decodedToken.uid); 
+        req.user = { ...decodedToken, ...dbUser }; // Merge decodedToken with dbUser
         
         // Upsert user into storage (Firebase Realtime Database)
         await storage.upsertUser({
@@ -89,6 +91,9 @@ export const isAdmin = async (req, res, next) => {
 
   try {
     const dbUser = await storage.getUser(req.user.uid);
+    console.log('isAdmin: Fetched dbUser:', dbUser);
+    console.log('isAdmin: dbUser?.isAdmin:', dbUser?.isAdmin);
+
     if (dbUser?.isAdmin) {
       next();
     } else {

@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -13,21 +14,14 @@ import {
 import { BookOpen, Library, Shield, LogOut, User } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { AuthModal } from "@/components/AuthModal";
 
 export function Navigation() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [location] = useLocation();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const isAdmin = user?.isAdmin;
-
-  const handleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -124,7 +118,7 @@ export function Navigation() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={handleSignIn} className="gap-2 font-serif">
+              <Button onClick={() => setIsAuthModalOpen(true)} className="gap-2 font-serif">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Enter the Tome</span>
                 <span className="sm:hidden">Login</span>
@@ -133,6 +127,10 @@ export function Navigation() {
           </div>
         </div>
       </div>
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </nav>
   );
 }

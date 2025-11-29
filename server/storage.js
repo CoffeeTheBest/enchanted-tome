@@ -11,8 +11,13 @@ export class DatabaseStorage {
 
   async upsertUser(userData) {
     const userRef = ref(db, `users/${userData.id}`);
+    const existingUserSnapshot = await get(userRef);
+    const existingUserData = existingUserSnapshot.val();
+
+    // Merge existing data with new data, preserving fields not provided in userData
     await set(userRef, {
-      ...userData,
+      ...(existingUserData || {}), // Start with existing data, or empty object if none
+      ...userData,                 // Overlay with new data
       updatedAt: new Date().toISOString(),
     });
     return this.getUser(userData.id);

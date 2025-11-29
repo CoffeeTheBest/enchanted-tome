@@ -18,6 +18,7 @@ function Router() {
 
   return (
     <Switch>
+      <Route path="/admin" component={AdminPage} />
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
@@ -27,7 +28,6 @@ function Router() {
         <>
           <Route path="/" component={Home} />
           <Route path="/books" component={BooksPage} />
-          <Route path="/admin" component={AdminPage} />
         </>
       )}
       <Route component={NotFound} />
