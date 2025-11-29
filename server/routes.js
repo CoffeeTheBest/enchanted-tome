@@ -1,13 +1,12 @@
 import { storage } from "./storage.js";
-import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth.js";
-import { insertBookSchema, updateBookSchema } from "@shared/schema.js";
+import { setupAuth, isAuthenticated, isAdmin } from "./auth.js";
 
 export async function registerRoutes(httpServer, app) {
   await setupAuth(app);
 
   app.get('/api/auth/user', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -28,7 +27,7 @@ export async function registerRoutes(httpServer, app) {
 
   app.get("/api/books/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const book = await storage.getBook(id);
       if (!book) {
         return res.status(404).json({ message: "Book not found" });
@@ -42,15 +41,7 @@ export async function registerRoutes(httpServer, app) {
 
   app.post("/api/books", isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const result = insertBookSchema.safeParse(req.body);
-      if (!result.success) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: result.error.flatten() 
-        });
-      }
-      
-      const book = await storage.createBook(result.data);
+      const book = await storage.createBook(req.body);
       res.status(201).json(book);
     } catch (error) {
       console.error("Error creating book:", error);
@@ -60,21 +51,13 @@ export async function registerRoutes(httpServer, app) {
 
   app.put("/api/books/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const existing = await storage.getBook(id);
       if (!existing) {
         return res.status(404).json({ message: "Book not found" });
       }
 
-      const result = updateBookSchema.safeParse(req.body);
-      if (!result.success) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: result.error.flatten() 
-        });
-      }
-      
-      const book = await storage.updateBook(id, result.data);
+      const book = await storage.updateBook(id, req.body);
       res.json(book);
     } catch (error) {
       console.error("Error updating book:", error);
@@ -84,7 +67,7 @@ export async function registerRoutes(httpServer, app) {
 
   app.delete("/api/books/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const existing = await storage.getBook(id);
       if (!existing) {
         return res.status(404).json({ message: "Book not found" });
@@ -100,7 +83,7 @@ export async function registerRoutes(httpServer, app) {
 
   app.post("/api/admin/make-admin", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.uid;
       
       const user = await storage.getUser(userId);
       if (!user) {

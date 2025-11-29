@@ -1,68 +1,74 @@
-import { users, books } from "@shared/schema.js";
 import { db } from "./db.js";
-import { eq, desc } from "drizzle-orm";
+import { ref, get, set, child, push, update, remove } from "firebase/database";
+import { v4 as uuidv4 } from 'uuid';
 
 export class DatabaseStorage {
   async getUser(id) {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    const userRef = ref(db, `users/${id}`);
+    const snapshot = await get(userRef);
+    return snapshot.val();
   }
 
   async upsertUser(userData) {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+    const userRef = ref(db, `users/${userData.id}`);
+    await set(userRef, {
+      ...userData,
+      updatedAt: new Date().toISOString(),
+    });
+    return this.getUser(userData.id);
   }
 
   async updateUser(id, data) {
-    const [user] = await db
-      .update(users)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(users.id, id))
-      .returning();
-    return user;
+    const userRef = ref(db, `users/${id}`);
+    await update(userRef, {
+      ...data,
+      updatedAt: new Date().toISOString(),
+    });
+    return this.getUser(id);
   }
 
   async getAllBooks() {
-    return db.select().from(books).orderBy(desc(books.createdAt));
+    const booksRef = ref(db, 'books');
+    const snapshot = await get(booksRef);
+    const booksData = snapshot.val();
+    if (!booksData) {
+      return [];
+    }
+    return Object.values(booksData).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
   async getBook(id) {
-    const [book] = await db.select().from(books).where(eq(books.id, id));
-    return book;
+    const bookRef = ref(db, `books/${id}`);
+    const snapshot = await get(bookRef);
+    return snapshot.val();
   }
 
   async createBook(bookData) {
-    const [book] = await db
-      .insert(books)
-      .values(bookData)
-      .returning();
-    return book;
+    const newBookId = uuidv4();
+    const bookRef = ref(db, `books/${newBookId}`);
+    const newBook = {
+      ...bookData,
+      id: newBookId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    await set(bookRef, newBook);
+    return newBook;
   }
 
   async updateBook(id, bookData) {
-    const [book] = await db
-      .update(books)
-      .set({ ...bookData, updatedAt: new Date() })
-      .where(eq(books.id, id))
-      .returning();
-    return book;
+    const bookRef = ref(db, `books/${id}`);
+    await update(bookRef, {
+      ...bookData,
+      updatedAt: new Date().toISOString(),
+    });
+    return this.getBook(id);
   }
 
   async deleteBook(id) {
-    const [book] = await db
-      .delete(books)
-      .where(eq(books.id, id))
-      .returning();
+    const bookRef = ref(db, `books/${id}`);
+    const book = await this.getBook(id);
+    await remove(bookRef);
     return book;
   }
 }

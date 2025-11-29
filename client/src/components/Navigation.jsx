@@ -11,12 +11,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, Library, Shield, LogOut, User } from "lucide-react";
+import { auth } from "@/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 
 export function Navigation() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [location] = useLocation();
 
   const isAdmin = user?.isAdmin;
+
+  const handleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
@@ -98,22 +117,18 @@ export function Navigation() {
                       <DropdownMenuSeparator />
                     </>
                   )}
-                  <DropdownMenuItem asChild>
-                    <a href="/api/logout" className="flex items-center gap-2 cursor-pointer text-destructive" data-testid="dropdown-logout">
-                      <LogOut className="h-4 w-4" />
-                      Sign Out
-                    </a>
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 cursor-pointer text-destructive" data-testid="dropdown-logout">
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <a href="/api/login" data-testid="link-login">
-                <Button className="gap-2 font-serif">
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">Enter the Tome</span>
-                  <span className="sm:hidden">Login</span>
-                </Button>
-              </a>
+              <Button onClick={handleSignIn} className="gap-2 font-serif">
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Enter the Tome</span>
+                <span className="sm:hidden">Login</span>
+              </Button>
             )}
           </div>
         </div>

@@ -8,6 +8,8 @@ import { OrnateDivider, OrnateFrame } from "@/components/OrnateSection";
 import { BookCardSkeleton } from "@/components/LoadingSpinner";
 import { BookOpen, Sparkles, Library, Clock } from "lucide-react";
 import { useState } from "react";
+import { auth } from "@/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export default function Landing() {
   const [selectedBook, setSelectedBook] = useState(null);
@@ -17,6 +19,18 @@ export default function Landing() {
   });
 
   const featuredBooks = books.slice(0, 4);
+
+  const handleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      // After successful sign-in, the onAuthStateChanged listener in useAuth.js
+      // will handle the user state and navigation.
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
+  };
+
 
   return (
     <div className="min-h-screen">
@@ -69,12 +83,10 @@ export default function Landing() {
                   Browse Our Collection
                 </Button>
               </Link>
-              <a href="/api/login">
-                <Button variant="outline" size="lg" className="font-serif gap-2 text-lg px-8 backdrop-blur-sm" data-testid="button-enter-tome">
-                  <BookOpen className="h-5 w-5" />
-                  Enter the Tome
-                </Button>
-              </a>
+              <Button onClick={handleSignIn} variant="outline" size="lg" className="font-serif gap-2 text-lg px-8 backdrop-blur-sm" data-testid="button-enter-tome">
+                <BookOpen className="h-5 w-5" />
+                Sign in with Google
+              </Button>
             </div>
           </ScrollReveal>
 
